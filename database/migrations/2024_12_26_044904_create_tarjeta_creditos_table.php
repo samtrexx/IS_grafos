@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         //cambiar el nombre
-        Schema::create('tarjetas', function (Blueprint $table) {
+        Schema::create('tarjeta_creditos', function (Blueprint $table) {
             $table->id();
             $table->string('nombre');
             $table->string('no_tarjeta');

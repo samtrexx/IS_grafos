@@ -52,30 +52,11 @@ const logout = () => {
                                 <NavLink :href="route('dashboard')" :active="route().current('dashboard')">
                                     Dashboard
                                 </NavLink>
-                                <NavLink :href="route('Adeudos.index')" :active="route().current('Adeudos.index')">
-                                    Adeudos
-                                </NavLink>
-                                <NavLink :href="route('Ingresos.index')" :active="route().current('Ingresos.index')">
-                                    Ingresos
-                                </NavLink>
-                                <NavLink :href="route('Deudas.index')" :active="route().current('Deudas.index')">
-                                    Deudas
-                                </NavLink>
+                                
                                 <NavLink :href="route('tarjetas.index')" :active="route().current('tarjetas.index')">
                                     Tarjetas
                                 </NavLink>
-                                <NavLink :href="route('Presupuestos.index')" :active="route().current('Presupuestos.index')">
-                                    Presupuestos
-                                </NavLink>
-                                <NavLink :href="route('reporte')" :active="route().current('reporte')">
-                                    Exportar
-                                </NavLink>
-                                <NavLink :href="route('Simulacion.index')" :active="route().current('Simulacion.index')">
-                                    Simular
-                                </NavLink>
-                                <NavLink :href="route('Quincenas.index')" :active="route().current('Quicenas.index')">
-                                    Quincenas
-                                </NavLink>
+                               
 
                             </div>
                         </div>

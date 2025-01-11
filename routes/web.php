@@ -1,14 +1,7 @@
 <?php
 
-use App\Http\Controllers\ReporteController;
+
 use App\Http\Controllers\TarjetCreditoController;
-use App\Http\Controllers\TipoAdeudoController;
-use App\Http\Controllers\IngresosController;
-use App\Http\Controllers\DeudasController;
-use App\Http\Controllers\QuincenasController;
-use App\Http\Controllers\PresupuestosController;
-use App\Http\Controllers\SimulacionController;
-use App\Http\Controllers\CsvExportController;
 
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -33,20 +26,9 @@ Route::middleware([
     })->name('dashboard');
 
     Route::resource('tarjetas', TarjetCreditoController::class);
-    Route::resource('Ingresos', IngresosController::class);
-    Route::resource('Adeudos', TipoAdeudoController::class);
-    Route::resource('Deudas', DeudasController::class);
-    Route::resource('Quincenas', QuincenasController::class);
-    Route::resource('Presupuestos', PresupuestosController::class);
-    Route::resource('Simulacion', SimulacionController::class);
+    
 
-    Route::get('reporte', ReporteController::class)
-        ->name('reporte');
-
-    Route::get('reporte/pdf',[ReporteController::class,'renderPDF']);
-    Route::get('/reporte/exportar-csv', [CsvExportController::class, 'exportToCsv']);
-
-
+    
     Route::get('/tarjeta-credito/pagar/{id}', [TarjetCreditoController::class, 'pagar'])
         ->name('tarjeta-credito.pagar');
     Route::post('/tarjetas-credito/procesarpago/{id}', [TarjetCreditoController::class, 'procesapago'])->name('tarjetadecredito.procesar_pago');
