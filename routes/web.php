@@ -7,6 +7,21 @@ use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
+//modificado por  JSM
+use App\Http\Controllers\GrafoController;
+
+Route::middleware([
+    'auth:sanctum',
+    config('jetstream.auth_session'),
+    'verified',
+])->group(function () {
+    Route::get('/dashboard', [GrafoController::class, 'index'])->name('dashboard');
+    Route::get('/generar-grafo', [GrafoController::class, 'create'])->name('generar-grafo');
+    Route::post('/generar-grafo', [GrafoController::class, 'store'])->name('guardar-grafo');
+});
+
+//fin de modificaicón de JSM
+
 Route::get('/', function () {
     return Inertia::render('Welcome', [
         'canLogin' => Route::has('login'),
@@ -44,9 +59,9 @@ Route::middleware([
     })->name('dashboard');
 
     Route::resource('tarjetas', TarjetCreditoController::class);
-    
 
-    
+
+
     Route::get('/tarjeta-credito/pagar/{id}', [TarjetCreditoController::class, 'pagar'])
         ->name('tarjeta-credito.pagar');
     Route::post('/tarjetas-credito/procesarpago/{id}', [TarjetCreditoController::class, 'procesapago'])->name('tarjetadecredito.procesar_pago');

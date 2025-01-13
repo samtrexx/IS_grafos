@@ -22,6 +22,7 @@
     "dependencies": {
         "bootstrap-icons": "^1.11.3",
         "puppeteer": "^23.11.1",
+        "vis-network": "^9.1.9",
         "ziggy-js": "^2.4.1"
     }
 }
