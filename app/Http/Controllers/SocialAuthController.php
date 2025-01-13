@@ -9,37 +9,39 @@ use Illuminate\Support\Facades\Auth;
 
 class SocialAuthController extends Controller
 {
-    // Redirigir al usuario a Google
+    // Redirige a Google para la autenticación
     public function redirectToGoogle()
     {
         return Socialite::driver('google')->redirect();
     }
 
-    // Manejar la respuesta de Google
+    // Maneja la respuesta de Google
     public function handleGoogleCallback()
     {
         try {
-            $user = Socialite::driver('google')->stateless()->user();
-    
-            $existingUser = User::where('email', $user->getEmail())->first();
-    
-            if ($existingUser) {
-                Auth::login($existingUser);
-            } else {
-                $newUser = User::create([
-                    'name' => $user->getName(),
-                    'email' => $user->getEmail(),
-                    'google_id' => $user->getId(),
-                    'avatar' => $user->getAvatar(),
-                    'password' => bcrypt('default_password'),
+            // Obtener los datos del usuario desde Google
+            $googleUser = Socialite::driver('google')->user();
+
+            // Buscar si el usuario ya existe
+            $user = User::where('google_id', $googleUser->getId())->first();
+
+            if (!$user) {
+                // Si el usuario no existe, crear uno nuevo
+                $user = User::create([
+                    'name' => $googleUser->getName(),
+                    'email' => $googleUser->getEmail(),
+                    'google_id' => $googleUser->getId(),
+                    'password' => bcrypt(uniqid()), // Generar una contraseña temporal
                 ]);
-    
-                Auth::login($newUser);
             }
-    
-            return redirect('/dashboard');
+
+            // Autenticar al usuario
+            Auth::login($user, true);
+
+            // Redirigir a la página deseada
+            return redirect()->intended('/dashboard');
         } catch (\Exception $e) {
-            return redirect('/')->withErrors('Error al autenticar con Google: ' . $e->getMessage());
+            return redirect('/login')->with('error', 'Error de autenticación con Google');
         }
     }
     
