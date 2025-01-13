@@ -19,11 +19,7 @@
     <body class="font-sans antialiased">
         @inertia
 
-        <div class="container">
-            <h1>Dashboard</h1>
-            <div id="grafo-container" style="height: 600px;"></div>
-        </div>
-
+       
         <script>
             document.addEventListener('DOMContentLoaded', () => {
                 // Obtener nodos y relaciones desde tu base de datos Neo4j

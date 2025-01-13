@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 
 class GrafoController extends Controller
 {
+    
     public function index() {
         // Lógica para mostrar grafos previos en el dashboard
         return view('dashboard');

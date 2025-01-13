@@ -53,10 +53,6 @@ const logout = () => {
                                     Dashboard
                                 </NavLink>
                                 
-                                <NavLink :href="route('tarjetas.index')" :active="route().current('tarjetas.index')">
-                                    Tarjetas
-                                </NavLink>
-                               
 
                             </div>
                         </div>
