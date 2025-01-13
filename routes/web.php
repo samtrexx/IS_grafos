@@ -2,7 +2,7 @@
 
 
 use App\Http\Controllers\TarjetCreditoController;
-
+use App\Http\Controllers\SocialAuthController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -15,7 +15,25 @@ Route::get('/', function () {
         'phpVersion' => PHP_VERSION,
     ]);
 });
+// Rutas para autenticación social (ejemplo: Google)
+Route::get('/auth/google/redirect', [SocialAuthController::class, 'redirectToGoogle'])->name('auth.google.redirect');
+Route::get('/auth/google/callback', [SocialAuthController::class, 'handleGoogleCallback'])->name('auth.google.callback');
+// Rutas protegidas por autenticación
+Route::middleware([
+    'auth:sanctum',
+    config('jetstream.auth_session'),
+    'verified',
+])->group(function () {
+    Route::get('/dashboard', function () {
+        return Inertia::render('Dashboard');
+    })->name('dashboard');
 
+    // Rutas para la funcionalidad de tarjetas de crédito
+    Route::resource('tarjetas', TarjetCreditoController::class);
+
+    Route::get('/tarjeta-credito/pagar/{id}', [TarjetCreditoController::class, 'pagar'])->name('tarjeta-credito.pagar');
+    Route::post('/tarjetas-credito/procesarpago/{id}', [TarjetCreditoController::class, 'procesapago'])->name('tarjetadecredito.procesar_pago');
+});
 Route::middleware([
     'auth:sanctum',
     config('jetstream.auth_session'),

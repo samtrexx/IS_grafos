@@ -21,6 +21,9 @@ const submit = () => {
         onFinish: () => form.reset('password', 'password_confirmation'),
     });
 };
+const redirectToGoogle = () => {
+    window.location.href = route('auth.google.redirect'); // Redirige a la ruta de autenticación con Google
+};
 </script>
 
 <template>
@@ -97,7 +100,16 @@ const submit = () => {
                     <InputError class="mt-2" :message="form.errors.terms" />
                 </InputLabel>
             </div>
-
+            <div class="flex flex-col items-center justify-end mt-4 space-y-4">
+                <!-- Botón para registro con Google -->
+                <button
+                    @click="redirectToGoogle"
+                    type="button"
+                    class="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                >
+                    Registrarse con Google
+                </button>
+            </div>
             <div class="flex items-center justify-end mt-4">
                 <Link :href="route('login')" class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                     Already registered?
