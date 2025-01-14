@@ -27,6 +27,11 @@ const submit = () => {
         onFinish: () => form.reset('password'),
     });
 };
+
+// Redirigir a la autenticación con Google
+const redirectToGoogle = () => {
+    window.location.href = route('auth.google.redirect');
+};
 </script>
 
 <template>
@@ -76,6 +81,17 @@ const submit = () => {
                 </label>
             </div>
 
+            <!-- Botón para iniciar sesión con Google -->
+            <div class="flex flex-col items-center justify-center mt-4 space-y-4">
+                <button
+                    @click.prevent="redirectToGoogle"
+                    type="button"
+                    class="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                >
+                    Iniciar sesión con Google
+                </button>
+            </div>
+
             <div class="flex items-center justify-end mt-4">
                 <Link v-if="canResetPassword" :href="route('password.request')" class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                     Forgot your password?
@@ -85,7 +101,6 @@ const submit = () => {
                     Log in
                 </PrimaryButton>
             </div>
-            
         </form>
     </AuthenticationCard>
 </template>
