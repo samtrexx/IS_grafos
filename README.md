@@ -18,11 +18,16 @@ Para Composer :
 - [run php artisan serve
 - npm run dev
 
+
+Requerimientos: 
 api key : 8b53a847ebb34ffd91b0162c3f16c9b1
+#Neo4j
+Se debe de generar una base de datos llamada "data" para que se funcione el codigo, de no ser asi cambiar en el NewsController y GrafoController
+Par lo que es el usuario ingresa: http://localhost:7474/browser/ 
+Se puede cambar el usuario y contraseña, el usuario por defecto es neo4j y la contraseña neo4j. cambia la contraseña a "hello1234"
 Generar una BD en NEO4j, local nombre "data"
 Credenciales (nombre, contraseña) Contraseña se cambia en localhost:7474
 Cambios en el config NEO4j:
-{
 # Bolt connector
 server.bolt.enabled=true
 server.bolt.listen_address=:7687
@@ -35,8 +40,8 @@ server.http.advertised_address=:7474
 
 # HTTPS Connector (deshabilitado si no lo necesitas)
 server.https.enabled=false
-}
 
+#Requisitos
 npm install vis-network
 composer require laudis/neo4j-php-client
 composer require guzzlehttp/guzzle
