@@ -9,17 +9,12 @@ use Inertia\Inertia;
 
 //modificado por  JSM
 use App\Http\Controllers\GrafoController;
-/*
-Route::middleware([
-    'auth:sanctum',
-    config('jetstream.auth_session'),
-    'verified',
-])->group(function () {
+
+Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified'])->group(function () {
     Route::get('/dashboard', [GrafoController::class, 'index'])->name('dashboard');
     Route::get('/generar-grafo', [GrafoController::class, 'create'])->name('generar-grafo');
     Route::post('/generar-grafo', [GrafoController::class, 'store'])->name('guardar-grafo');
 });
-*/
 //fin de modificaicón de JSM
 
 Route::get('/', function () {

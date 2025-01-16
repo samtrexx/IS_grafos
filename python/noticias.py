@@ -3,8 +3,6 @@ import sys
 import spacy
 from newsapi import NewsApiClient
 from neo4j import GraphDatabase
-
-# API key as an environment variable for security
 import os
 
 class Neo4jHandler:
@@ -67,19 +65,20 @@ def remove_duplicates(items):
             seen.append(item)
     return seen
 
-def main(api_key, query, neo4j_uri, neo4j_user, neo4j_password):
-    nlp = spacy.load('es_core_news_md')
+def main(api_key, query, neo4j_uri, neo4j_user, neo4j_password, user_id):
+    nlp = spacy.load("es_core_news_lg")
+    neo4j_handler = Neo4jHandler(neo4j_uri, neo4j_user, neo4j_password)
     articles = fetch_news(api_key, query)
     all_entities = []
     all_relations = []
-    neo4j_handler = Neo4jHandler(neo4j_uri, neo4j_user, neo4j_password)
+
     with neo4j_handler.driver.session() as session:
         for article in articles:
             entities, relations = process_single_article(nlp, article)
             all_entities.extend(entities)
             all_relations.extend(relations)
             for entity in entities:
-                session.write_transaction(neo4j_handler.create_node, entity[1], {"name": entity[0]})
+                session.write_transaction(neo4j_handler.create_node, entity[1], {"name": entity[0], "user_id": user_id})
             for relation in relations:
                 session.write_transaction(neo4j_handler.create_relationship, relation['subject'], relation['object'], relation['relation'])
 
@@ -92,13 +91,14 @@ def main(api_key, query, neo4j_uri, neo4j_user, neo4j_password):
     return json_data
 
 if __name__ == "__main__":
-    if len(sys.argv) != 6:
-        print("Uso: python noticias_spacy.py <API_KEY> <query> <neo4j_uri> <neo4j_user> <neo4j_password>")
+    if len(sys.argv) != 7:
+        print("Uso: python noticias_spacy.py <API_KEY> <query> <neo4j_uri> <neo4j_user> <neo4j_password> <user_id>")
         sys.exit(1)
     api_key = sys.argv[1]
     query = sys.argv[2]
     neo4j_uri = sys.argv[3]
     neo4j_user = sys.argv[4]
     neo4j_password = sys.argv[5]
-    json_data = main(api_key, query, neo4j_uri, neo4j_user, neo4j_password)
+    user_id = int(sys.argv[6])
+    json_data = main(api_key, query, neo4j_uri, neo4j_user, neo4j_password, user_id)
     print(json_data)
