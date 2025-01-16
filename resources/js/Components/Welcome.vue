@@ -5,34 +5,46 @@ import { ref, onMounted } from 'vue';
 import axios from 'axios';
 
 const grafos = ref([]);
+const selectFilter = ref("");  // Filtro seleccionado por el usuario
+const filterValue = ref("");   // Valor del filtro (tema, autor, fecha)
 
-onMounted(async () => {
+const getFilteredGraphData = async () => {
     try {
-        // Llamar a la API para obtener nodos y relaciones
-        const response = await axios.get('/fetch-news');
+        let url = '/fetch-news';  // URL por defecto
+
+        if (selectFilter.value && filterValue.value) {
+            url = `/fetch-news/${selectFilter.value}/${filterValue.value}`;
+        }
+
+        console.log(`Making request to: ${url}`);
+
+        // Hacer la solicitud a la API con el filtro y valor
+        const response = await axios.get(url);
+        console.log('API response:', response.data); // Agrega esto para depurar la respuesta de la API
+
         const data = response.data;
 
         // Verificar la estructura de la respuesta
-        console.log('Graph data:', data); // Verifica la estructura aquí
-
-        // Asegúrate de que `data.nodes` y `data.edges` existan
         if (!data.nodes || !data.edges) {
             throw new Error('Invalid data format: nodes or edges are missing');
         }
 
-        // Crear conjuntos dinámicos de nodos y relaciones
+        // Procesar los nodos y relaciones si la estructura es correcta
         const nodes = new vis.DataSet([]);
         const edges = new vis.DataSet([]);
 
-        // Procesar nodos
         data.nodes.forEach(node => {
             nodes.add({
                 id: node.id,
-                label: node.label
+                label: node.label,
+                author: node.author,
+                title: node.title,
+                description: node.description,
+                url: node.url,
+                content: node.content
             });
         });
 
-        // Procesar relaciones
         data.edges.forEach(edge => {
             edges.add({
                 from: edge.from,
@@ -41,7 +53,6 @@ onMounted(async () => {
             });
         });
 
-        // Configurar el grafo
         const container = document.getElementById('grafo-container');
         const visData = { nodes, edges };
         const options = {
@@ -53,21 +64,29 @@ onMounted(async () => {
 
         const network = new vis.Network(container, visData, options);
 
-        // Evento: clic en un nodo
         network.on('click', function (params) {
             if (params.nodes.length > 0) {
                 const nodeId = params.nodes[0];
                 const node = nodes.get(nodeId);
-                alert('Información del nodo: ' + JSON.stringify(node));
+                alert(node.content);
             }
         });
+
     } catch (error) {
         console.error('Error fetching graph data:', error);
     }
+};
+
+const clearFilters = () => {
+    selectFilter.value = "";  // Limpiar filtro
+    filterValue.value = "";  // Limpiar valor del filtro
+    getFilteredGraphData();  // Volver a cargar los datos sin filtros
+};
+
+onMounted(() => {
+    // Llamar a la función con un filtro predeterminado si es necesario
+    getFilteredGraphData();
 });
-
-
-
 </script>
 
 <template>
@@ -79,7 +98,20 @@ onMounted(async () => {
                     <h1 class="mt-8 text-2xl font-medium text-gray-900">
                         HALLOOOOOOOOOOO!
                     </h1>
-                <div id="grafo-container" style="height: 500px; margin-top: 20px;"></div>
+                <label for="filter">Select Filter:</label>
+                <select v-model="selectFilter">
+                    <option value="">No Filter</option>
+                    <option value="theme">Theme</option>
+                    <option value="author">Author</option>
+                    <option value="date">Date</option>
+                </select>
+
+                <input v-model="filterValue" placeholder="Enter filter value" />
+
+                <button @click="getFilteredGraphData">Buscar</button>
+                <button @click="clearFilters">Limpiar</button>
+
+                <div id="grafo-container" style="height: 500px; width: 100%;"></div>
 
                 </div>
 

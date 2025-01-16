@@ -57,6 +57,9 @@ Route::middleware([
     })->name('dashboard');
 
     Route::get('/fetch-news', [NewsController::class, 'fetchNews']);
+    Route::get('/fetch-news/theme/{theme}', [NewsController::class, 'fetchNewsByTheme']);
+    Route::get('/fetch-news/author/{author}', [NewsController::class, 'fetchNewsByAuthor']);
+    Route::get('/fetch-news/date/{date}', [NewsController::class, 'fetchNewsByDate']);
 
 });
 

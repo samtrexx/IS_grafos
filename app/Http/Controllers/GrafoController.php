@@ -50,7 +50,7 @@ class GrafoController extends Controller
     {
         try {
             // Consulta para obtener nodos y relaciones
-            $cypherQuery = "MATCH (n)-[r]->(m) RETURN n, r, m LIMIT 10";
+            $cypherQuery = "MATCH (n)-[r]->(m) RETURN n, r, m LIMIT 100";
             $result = $this->neo4jService->runQuery($cypherQuery);
 
             // Formatear los nodos y relaciones
