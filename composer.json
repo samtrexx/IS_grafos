@@ -15,6 +15,7 @@
         "laravel/sanctum": "^4.0",
         "laravel/socialite": "^5.16",
         "laravel/tinker": "^2.9",
+        "laudis/neo4j-php-client": "^3.2",
         "spatie/laravel-pdf": "^1.5",
         "tightenco/ziggy": "^2.0"
     },

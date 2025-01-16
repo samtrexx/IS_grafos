@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use App\Services\Neo4jService;
 
 class GrafoController extends Controller
 {
@@ -22,30 +23,72 @@ class GrafoController extends Controller
         return view('generar-grafo');
     }
 
-    public function store(Request $request) {
-        // Lógica para generar un grafo a partir de la consulta
+    public function store(Request $request, Neo4jService $neo4jService)
+    {
         $query = $request->input('query');
-        $user_id = Auth::id(); // Obtener el ID del usuario autenticado
+        $user_id = Auth::id();
 
-        // Ruta relativa al entorno virtual y al script de Python
-        $venv_path = '/home/javier/Documentos/EntornoPLN/bin/activate'; // Ruta absoluta al entorno virtual
-        $script_path = base_path('python/noticias.py'); // Ruta relativa al script de Python
+        try {
+            // Ejecutar consulta en Neo4j
+            $cypherQuery = "
+            CREATE (n:Grafo {query: \$query, user_id: \$user_id, created_at: timestamp()})
+            RETURN n
+        ";
+            $neo4jService->runQuery($cypherQuery, [
+                'query' => $query,
+                'user_id' => $user_id,
+            ]);
 
-        // Comando para activar el entorno virtual y ejecutar el script de Python
-        $command = "source $venv_path && python3 $script_path " . escapeshellarg(env('NEWSAPI_KEY')) . " " . escapeshellarg($query) . " " . escapeshellarg(env('NEO4J_URI')) . " " . escapeshellarg(env('NEO4J_USER')) . " " . escapeshellarg(env('NEO4J_PASSWORD')) . " " . escapeshellarg($user_id);
+            // Guardar en la base de datos
+            DB::table('grafos')->insert([
+                'user_id' => $user_id,
+                'query' => $query,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
 
-        // Ejecución del comando
-        $output = shell_exec($command);
-
-        // Guardar información del grafo en la base de datos
-        DB::table('grafos')->insert([
-            'user_id' => $user_id,
-            'query' => $query,
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
-
-        // Redirigir al dashboard
-        return redirect()->route('dashboard');
+            return redirect()->route('dashboard')->with('success', 'Grafo generado exitosamente.');
+        } catch (\Exception $e) {
+            return redirect()->route('dashboard')->with('error', 'Ocurrió un error al generar el grafo: ' . $e->getMessage());
+        }
     }
+
+    public function getGraphData(Neo4jService $neo4jService)
+    {
+        try {
+            // Consulta para obtener nodos y relaciones de Neo4j
+            $cypherQuery = "MATCH (n)-[r]->(m) RETURN n, r, m LIMIT 100";
+            $result = $neo4jService->runQuery($cypherQuery);
+
+            // Formatear los nodos y las relaciones
+            $nodes = [];
+            $edges = [];
+
+            foreach ($result as $record) {
+                // Formatear los nodos
+                $nodes[] = [
+                    'id' => $record->get('n')->value('id'),
+                    'label' => $record->get('n')->value('name'),
+                ];
+
+                // Formatear las relaciones
+                $edges[] = [
+                    'from' => $record->get('n')->value('id'),
+                    'to' => $record->get('m')->value('id'),
+                    'label' => $record->get('r')->type(),
+                ];
+            }
+
+            // Retornar los nodos y relaciones como respuesta JSON
+            return response()->json([
+                'nodes' => $nodes,
+                'edges' => $edges,
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Error al obtener los datos: ' . $e->getMessage()], 500);
+        }
+    }
+
+
 }
