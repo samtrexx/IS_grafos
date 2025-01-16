@@ -9,37 +9,30 @@ use App\Services\Neo4jService;
 
 class GrafoController extends Controller
 {
-    public function index() {
-        $user_id = Auth::id(); // Obtener el ID del usuario autenticado
+    protected $neo4jService;
 
-        // Recuperar los grafos del usuario desde la base de datos
-        $grafos = DB::table('grafos')->where('user_id', $user_id)->get();
-
-        return view('dashboard', ['grafos' => $grafos]);
+    public function __construct(Neo4jService $neo4jService)
+    {
+        $this->neo4jService = $neo4jService;
     }
 
-    public function create() {
-        // Muestra la vista para generar un nuevo grafo
-        return view('generar-grafo');
-    }
-
-    public function store(Request $request, Neo4jService $neo4jService)
+    public function store(Request $request)
     {
         $query = $request->input('query');
         $user_id = Auth::id();
 
         try {
-            // Ejecutar consulta en Neo4j
+            // Crear el nodo en Neo4j
             $cypherQuery = "
-            CREATE (n:Grafo {query: \$query, user_id: \$user_id, created_at: timestamp()})
+            CREATE (n:Grafo {query: \$query, user_id: \$user_id, created_at: datetime()})
             RETURN n
-        ";
-            $neo4jService->runQuery($cypherQuery, [
+            ";
+            $this->neo4jService->runQuery($cypherQuery, [
                 'query' => $query,
                 'user_id' => $user_id,
             ]);
 
-            // Guardar en la base de datos
+            // Guardar el grafo en la base de datos local
             DB::table('grafos')->insert([
                 'user_id' => $user_id,
                 'query' => $query,
@@ -53,42 +46,49 @@ class GrafoController extends Controller
         }
     }
 
-    public function getGraphData(Neo4jService $neo4jService)
+    public function getGraphData()
     {
         try {
-            // Consulta para obtener nodos y relaciones de Neo4j
-            $cypherQuery = "MATCH (n)-[r]->(m) RETURN n, r, m LIMIT 100";
-            $result = $neo4jService->runQuery($cypherQuery);
+            // Consulta para obtener nodos y relaciones
+            $cypherQuery = "MATCH (n)-[r]->(m) RETURN n, r, m LIMIT 10";
+            $result = $this->neo4jService->runQuery($cypherQuery);
 
-            // Formatear los nodos y las relaciones
+            // Formatear los nodos y relaciones
             $nodes = [];
             $edges = [];
 
             foreach ($result as $record) {
-                // Formatear los nodos
-                $nodes[] = [
-                    'id' => $record->get('n')->value('id'),
-                    'label' => $record->get('n')->value('name'),
-                ];
+                $nodeN = $record['data'][0];
+                $nodeM = $record['data'][1];
+                $relation = $record['data'][2];
 
-                // Formatear las relaciones
+                $nodes[] = [
+                    'id' => $nodeN['id'],
+                    'label' => $nodeN['properties']['name'] ?? 'Unnamed',
+                ];
+                $nodes[] = [
+                    'id' => $nodeM['id'],
+                    'label' => $nodeM['properties']['name'] ?? 'Unnamed',
+                ];
                 $edges[] = [
-                    'from' => $record->get('n')->value('id'),
-                    'to' => $record->get('m')->value('id'),
-                    'label' => $record->get('r')->type(),
+                    'from' => $nodeN['id'],
+                    'to' => $nodeM['id'],
+                    'label' => $relation['type'] ?? 'Relation',
                 ];
             }
 
-            // Retornar los nodos y relaciones como respuesta JSON
+            // Eliminar nodos duplicados
+            $nodes = array_unique($nodes, SORT_REGULAR);
+
             return response()->json([
                 'nodes' => $nodes,
                 'edges' => $edges,
             ]);
-
         } catch (\Exception $e) {
             return response()->json(['error' => 'Error al obtener los datos: ' . $e->getMessage()], 500);
         }
     }
+
 
 
 }

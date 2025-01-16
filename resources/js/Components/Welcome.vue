@@ -3,69 +3,71 @@ import ApplicationLogo from '@/Components/ApplicationLogo.vue';
 import { Head, Link } from '@inertiajs/vue3';
 import { ref, onMounted } from 'vue';
 import axios from 'axios';
-import AppLayout from '@/Layouts/AppLayout.vue';
-import Welcome from '@/Components/Welcome.vue';
-
-defineProps({
-    canLogin: {
-        type: Boolean,
-    },
-    canRegister: {
-        type: Boolean,
-    },
-    laravelVersion: {
-        type: String,
-        required: true,
-    },
-    phpVersion: {
-        type: String,
-        required: true,
-    },
-});
 
 const grafos = ref([]);
 
 onMounted(async () => {
     try {
-        const response = await axios.get('/api/grafos');
-        grafos.value = response.data;
+        // Llamar a la API para obtener nodos y relaciones
+        const response = await axios.get('/fetch-news');
+        const data = response.data;
+
+        // Verificar la estructura de la respuesta
+        console.log('Graph data:', data); // Verifica la estructura aquí
+
+        // Asegúrate de que `data.nodes` y `data.edges` existan
+        if (!data.nodes || !data.edges) {
+            throw new Error('Invalid data format: nodes or edges are missing');
+        }
+
+        // Crear conjuntos dinámicos de nodos y relaciones
+        const nodes = new vis.DataSet([]);
+        const edges = new vis.DataSet([]);
+
+        // Procesar nodos
+        data.nodes.forEach(node => {
+            nodes.add({
+                id: node.id,
+                label: node.label
+            });
+        });
+
+        // Procesar relaciones
+        data.edges.forEach(edge => {
+            edges.add({
+                from: edge.from,
+                to: edge.to,
+                label: edge.label
+            });
+        });
+
+        // Configurar el grafo
+        const container = document.getElementById('grafo-container');
+        const visData = { nodes, edges };
+        const options = {
+            interaction: {
+                dragNodes: true,
+                zoomView: true,
+            },
+        };
+
+        const network = new vis.Network(container, visData, options);
+
+        // Evento: clic en un nodo
+        network.on('click', function (params) {
+            if (params.nodes.length > 0) {
+                const nodeId = params.nodes[0];
+                const node = nodes.get(nodeId);
+                alert('Información del nodo: ' + JSON.stringify(node));
+            }
+        });
     } catch (error) {
-        console.error('Error fetching grafos:', error);
+        console.error('Error fetching graph data:', error);
     }
-
-    const nodes = new vis.DataSet([
-        {id: 1, label: 'Node 1'},
-        {id: 2, label: 'Node 2'},
-        // Añade más nodos aquí--
-    ]);
-    const edges = new vis.DataSet([
-        {from: 1, to: 2, label: 'Relationship'},
-        // Añade más relaciones aquí
-    ]);
-
-    const container = document.getElementById('grafo-container');
-    const data = {
-        nodes: nodes,
-        edges: edges
-    };
-    const options = {
-        interaction: {
-            dragNodes: true,
-            zoomView: true
-        }
-    };
-    const network = new vis.Network(container, data, options);
-
-    // Mostrar información de un nodo al hacer clic
-    network.on('click', function (params) {
-        if (params.nodes.length > 0) {
-            const nodeId = params.nodes[0];
-            const node = nodes.get(nodeId);
-            // Aquí puedes hacer una llamada a la API de Wikidata para obtener información adicional
-            alert('Información del nodo: ' + JSON.stringify(node));
-        }
-    });
 });
+
+
+
 </script>
 
 <template>
@@ -77,7 +79,7 @@ onMounted(async () => {
                     <h1 class="mt-8 text-2xl font-medium text-gray-900">
                         HALLOOOOOOOOOOO!
                     </h1>
-                    <div id="grafo-container" style="height: 400px; margin-top: 10px;"></div>
+                <div id="grafo-container" style="height: 500px; margin-top: 20px;"></div>
 
                 </div>
 

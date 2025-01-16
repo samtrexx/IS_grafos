@@ -42,6 +42,11 @@ Route::middleware([
         return Inertia::render('Dashboard');
     })->name('dashboard');
 });
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/get-graph-data', [GrafoController::class, 'getGraphData'])->name('get-graph-data');
+});
+
 Route::middleware([
     'auth:sanctum',
     config('jetstream.auth_session'),
@@ -50,7 +55,6 @@ Route::middleware([
     Route::get('/dashboard', function () {
         return Inertia::render('Dashboard');
     })->name('dashboard');
-
 
     Route::get('/fetch-news', [NewsController::class, 'fetchNews']);
 
